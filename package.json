@@ -1,0 +1,16 @@
+{
+  "name": "bladeiron_api",
+  "version": "0.1",
+  "description": "High-level client-side API (JSONRPC 2.0) for dApp development with 11BE: BladeIron",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["ethereum","ipfs","web3","dapp","jsonrpc","api","11be"],
+  "author": "Jason Lin",
+  "license": "MIT",
+  "dependencies": {
+    "jayson": "^2.1.0",
+    "web3": "^0.19"
+  }
+}
