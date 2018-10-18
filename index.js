@@ -61,6 +61,11 @@ class BladeAPI {
 
 		this.init = (condType = "Sanity") => 
 		{
+			const __getABI = (ctrName = this.appName) =>
+			{
+				return [this.appName, this.configs.version, ctrName, path.join(this.configs.artifactDir, ctrName + '.json')]
+			}
+
 			const __newAppHelper = (ctrName = this.appName) => (condType = "Sanity") =>
 			{
 				let output = __getABI(ctrName); let condition = {};
@@ -68,24 +73,24 @@ class BladeAPI {
 				if (_c.length === 1) {
 					condition = { [condType]: path.join(this.configs.conditionDir, this.appName, ctrName, condType + '.js') }; 
 				}
-	
+
 				return [...output, condition];
 			}
 
-			const __getABI = (ctrName = this.appName) =>
-			{
-				return [this.appName, this.configs.version, ctrName, path.join(this.configs.artifactDir, ctrName + '.json')]
-			}
-
-			return this.client.request('connected', [])
+			return this.client.request('full_checks', [])
       				   .then((rc) => {
-      				   	   if (!rc.result) return rc;
-      					   return this.client.request('ipfs_connected', []);
+      				   	   if (!rc.result.geth || !rc.result.ipfs) {
+						console.log(rc);
+						throw "Server not fully functioning";
+					   }
       				   })
-      				   .then((rc) => {
-      				   	   if (!rc.result) return rc;
-					   if (this.configs.contracts.length === 0) return Promise.resolve([{}]);
+      				   .then(() => {
+					   if (this.configs.contracts.length === 0) {
+						console.log("Warning: no contract ABI loaded ...");
+						return Promise.resolve([{}]);
+					   }
 
+					   console.log("parsing ABI...");
       					   let reqs = this.configs.contracts.map((c) => {
       						   return this.client.request('newApp', __newAppHelper(c.ctrName)(condType));
       					   });
