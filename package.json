@@ -1,6 +1,6 @@
 {
   "name": "bladeiron_api",
-  "version": "0.1",
+  "version": "0.1.0",
   "description": "High-level client-side API (JSONRPC 2.0) for dApp development with 11BE: BladeIron",
   "main": "index.js",
   "scripts": {
