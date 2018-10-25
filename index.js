@@ -18,6 +18,7 @@ class BladeAPI {
 
 		this.ready = false;
 		this.client;
+		this.userWallet = '0x';
 
 		// Utilities
 		this.toAscii = (input) => { return w.toAscii(input) }
@@ -90,7 +91,7 @@ class BladeAPI {
 						return Promise.resolve([{}]);
 					   }
 
-					   console.log("parsing ABI...");
+					   console.log("parse ABI...");
       					   let reqs = this.configs.contracts.map((c) => {
       						   return this.client.request('newApp', __newAppHelper(c.ctrName)(condType));
       					   });
@@ -105,17 +106,47 @@ class BladeAPI {
                         return this.client.request('call', {appName: this.appName, ctrName, callName, args})
                 }
 
+	        this.linkAccount = (address) =>
+                {
+                        return this.client.request('canUseAccount', [address])
+                                   .then((rc) => {
+                                        if (rc.result[address] === true) {
+                                                 this.userWallet = address;
+                                                 return {result: true};
+                                        } else {
+                                                 return {result: false};
+                                        }
+                                   });
+                }
+
                 this.sendTk = (ctrName) => (callName) => (...__args) => (amount = null) =>
                 {
-                        let gasAmount = 250000; // should have dedicated request for gas estimation
-
                         let tkObj = {};
                         __args.map((i,j) => { tkObj = { ...tkObj, ['arg'+j]: i } });
                         let args = Object.keys(tkObj).sort();
 
-                        return this.client.request('enqueueTk', [this.appName, ctrName, callName, args, amount, gasAmount, tkObj])
+                        return this.client.request('getTkObj', [this.appName, ctrName, callName, args, this.userWallet, amount, tkObj])
                                    .then((rc) => { let jobObj = rc.result; return this.client.request('processJobs', [jobObj]); });
                 }
+
+		this.getTkObj = (ctrName) => (callName) => (...__args) => (amount = null) =>
+		{
+                        let tkObj = {};
+                        __args.map((i,j) => { tkObj = { ...tkObj, ['arg'+j]: i } });
+                        let args = Object.keys(tkObj).sort();
+
+                        return this.client.request('getTkObj', [this.appName, ctrName, callName, args, this.userWallet, amount, tkObj]);
+		}
+
+		this.processJobs = (jobObjList) =>
+		{
+			return this.client.request('processJobs', jobObjList);
+		}
+
+		this.getReceipts = (queueID) =>
+		{
+			return this.client.request('getReceipts', [queueID]);
+		}
 
 		this.allAccounts = () =>
                 {
@@ -144,7 +175,7 @@ class BladeAPI {
 		this.ipfsRead = (ipfsHash) =>
 		{
 			return this.client.request('ipfs_read', [ipfsHash])
-				   .then((rc) => { return Buffer(rc.result).toString() });
+				   .then((rc) => { return Buffer.from(rc.result).toString() });
 		}
 
 		this.ipnsPublish = (ipfsHash) =>
