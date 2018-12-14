@@ -86,7 +86,7 @@ class BladeAPI {
 
 			return this.client.call('full_checks', [])
       				   .then((rc) => {
-      				   	   if (!rc.result.geth || !rc.result.ipfs) {
+      				   	   if (!rc.geth || !rc.ipfs) {
 						console.log(rc);
 						throw "Server not fully functioning";
 					   }
@@ -116,7 +116,7 @@ class BladeAPI {
                 {
                         return this.client.call('canUseAccount', [address])
                                    .then((rc) => {
-                                        if (rc.result[address] === true) {
+                                        if (rc[address] === true) {
                                                  this.userWallet = address;
                                                  return {result: true};
                                         } else {
@@ -132,13 +132,13 @@ class BladeAPI {
                         let args = Object.keys(tkObj).sort();
 
                         return this.client.call('getTkObj', [this.appName, ctrName, callName, args, this.userWallet, amount, tkObj])
-                                   .then((rc) => { let jobObj = rc.result; return this.client.call('processJobs', [jobObj]); });
+                                   .then((rc) => { let jobObj = rc; return this.client.call('processJobs', [jobObj]); });
                 }
 
 		this.sendTx = (tokenSymbol) => (toAddress, amount) =>
 		{
 			return this.client.call('getTxObj', [this.userWallet, toAddress, amount])
-				   .then((rc) => { let jobObj = rc.result; return this.client.call('processJobs', [jobObj]); })
+				   .then((rc) => { let jobObj = rc; return this.client.call('processJobs', [jobObj]); })
 		}
 
 		this.getTkObj = (ctrName) => (callName) => (...__args) => (amount = null) =>
@@ -163,7 +163,7 @@ class BladeAPI {
 		this.allAccounts = () =>
                 {
                         return this.client.call('accounts', [])
-                                   .then((rc) => { return rc.result });
+                                   .then((rc) => { return rc });
                 }
 
 		/* 
@@ -175,19 +175,19 @@ class BladeAPI {
 		this.ipfsId = () => 
 		{
 			return this.client.call('ipfs_myid', [])
-				   .then((rc) => { return rc.result });
+				   .then((rc) => { return rc });
 		}
 
 		this.ipfsPut = (filepath) => 
 		{
 			return this.client.call('ipfs_put', [filepath])
-				   .then((rc) => { return rc.result });
+				   .then((rc) => { return rc });
 		}
 
 		this.ipfsRead = (ipfsHash) =>
 		{
 			return this.client.call('ipfs_read', [ipfsHash])
-				   .then((rc) => { return Buffer.from(rc.result).toString() });
+				   .then((rc) => { return Buffer.from(rc).toString() });
 		}
 
 		this.ipnsPublish = (ipfsHash) =>
@@ -196,13 +196,13 @@ class BladeAPI {
 			// but BladeIron still needs some ipfskey management functions 
 			// before exposing it.
 			return this.client.call('ipfs_publish', [ipfsHash])
-				   .then((rc) => { return rc.result });
+				   .then((rc) => { return rc });
 		}
 
 		this.pullIPNS = (ipnsHash) =>
 		{
 			return this.client.call('ipfs_pullIPNS', [ipnsHash])
-				   .then((rc) => { return rc.result });
+				   .then((rc) => { return rc });
 		}
 	}
 }
