@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const rpc = require('jayson/promise');
+const rpc = require('rpc-websockets').Client;
 const web3 = require('web3');
 const w = new web3(); // for util functions only... :P
 
@@ -52,11 +52,17 @@ class BladeAPI {
 		this.connectRPC = () => 
 		{
 			try {
-				this.client = rpc.client.http({host: this.rpchost, port: this.rpcport});
-				return true;
+				this.client = new rpc('ws://' + this.rpchost + ':' + this.rpcport);
+
+				const __ready = (resolve, reject) => 
+				{
+					this.client.on('open', () => { resolve(true) });
+				}
+
+				return new Promise(__ready);
 			} catch (err) {
 				console.log(err);
-				return false;
+				return Promise.reject(false);
 			}
 		}
 
@@ -78,7 +84,7 @@ class BladeAPI {
 				return [...output, condition];
 			}
 
-			return this.client.request('full_checks', [])
+			return this.client.call('full_checks', [])
       				   .then((rc) => {
       				   	   if (!rc.result.geth || !rc.result.ipfs) {
 						console.log(rc);
@@ -93,7 +99,7 @@ class BladeAPI {
 
 					   console.log("parse ABI...");
       					   let reqs = this.configs.contracts.map((c) => {
-      						   return this.client.request('newApp', __newAppHelper(c.ctrName)(condType));
+      						   return this.client.call('newApp', __newAppHelper(c.ctrName)(condType));
       					   });
       					
       					   return Promise.all(reqs);
@@ -103,12 +109,12 @@ class BladeAPI {
 		// Ethereum (geth) related functions
                 this.call = (ctrName = this.appName) => (callName) => (...args) =>
                 {
-                        return this.client.request('call', {appName: this.appName, ctrName, callName, args})
+                        return this.client.call('call', {appName: this.appName, ctrName, callName, args})
                 }
 
 	        this.linkAccount = (address) =>
                 {
-                        return this.client.request('canUseAccount', [address])
+                        return this.client.call('canUseAccount', [address])
                                    .then((rc) => {
                                         if (rc.result[address] === true) {
                                                  this.userWallet = address;
@@ -125,14 +131,14 @@ class BladeAPI {
                         __args.map((i,j) => { tkObj = { ...tkObj, ['arg'+j]: i } });
                         let args = Object.keys(tkObj).sort();
 
-                        return this.client.request('getTkObj', [this.appName, ctrName, callName, args, this.userWallet, amount, tkObj])
-                                   .then((rc) => { let jobObj = rc.result; return this.client.request('processJobs', [jobObj]); });
+                        return this.client.call('getTkObj', [this.appName, ctrName, callName, args, this.userWallet, amount, tkObj])
+                                   .then((rc) => { let jobObj = rc.result; return this.client.call('processJobs', [jobObj]); });
                 }
 
 		this.sendTx = (tokenSymbol) => (toAddress, amount) =>
 		{
-			return this.client.request('getTxObj', [this.userWallet, toAddress, amount])
-				   .then((rc) => { let jobObj = rc.result; return this.client.request('processJob', [jobObj]); })
+			return this.client.call('getTxObj', [this.userWallet, toAddress, amount])
+				   .then((rc) => { let jobObj = rc.result; return this.client.call('processJobs', [jobObj]); })
 		}
 
 		this.getTkObj = (ctrName) => (callName) => (...__args) => (amount = null) =>
@@ -141,22 +147,22 @@ class BladeAPI {
                         __args.map((i,j) => { tkObj = { ...tkObj, ['arg'+j]: i } });
                         let args = Object.keys(tkObj).sort();
 
-                        return this.client.request('getTkObj', [this.appName, ctrName, callName, args, this.userWallet, amount, tkObj]);
+                        return this.client.call('getTkObj', [this.appName, ctrName, callName, args, this.userWallet, amount, tkObj]);
 		}
 
 		this.processJobs = (jobObjList) =>
 		{
-			return this.client.request('processJobs', jobObjList);
+			return this.client.call('processJobs', jobObjList);
 		}
 
 		this.getReceipts = (queueID) =>
 		{
-			return this.client.request('getReceipts', [queueID]);
+			return this.client.call('getReceipts', [queueID]);
 		}
 
 		this.allAccounts = () =>
                 {
-                        return this.client.request('accounts', [])
+                        return this.client.call('accounts', [])
                                    .then((rc) => { return rc.result });
                 }
 
@@ -168,19 +174,19 @@ class BladeAPI {
  		 */
 		this.ipfsId = () => 
 		{
-			return this.client.request('ipfs_myid', [])
+			return this.client.call('ipfs_myid', [])
 				   .then((rc) => { return rc.result });
 		}
 
 		this.ipfsPut = (filepath) => 
 		{
-			return this.client.request('ipfs_put', [filepath])
+			return this.client.call('ipfs_put', [filepath])
 				   .then((rc) => { return rc.result });
 		}
 
 		this.ipfsRead = (ipfsHash) =>
 		{
-			return this.client.request('ipfs_read', [ipfsHash])
+			return this.client.call('ipfs_read', [ipfsHash])
 				   .then((rc) => { return Buffer.from(rc.result).toString() });
 		}
 
@@ -189,13 +195,13 @@ class BladeAPI {
 			// rpc call 'ipfs_publish' *actually* supports multiple ipfs keys
 			// but BladeIron still needs some ipfskey management functions 
 			// before exposing it.
-			return this.client.request('ipfs_publish', [ipfsHash])
+			return this.client.call('ipfs_publish', [ipfsHash])
 				   .then((rc) => { return rc.result });
 		}
 
 		this.pullIPNS = (ipnsHash) =>
 		{
-			return this.client.request('ipfs_pullIPNS', [ipnsHash])
+			return this.client.call('ipfs_pullIPNS', [ipnsHash])
 				   .then((rc) => { return rc.result });
 		}
 	}

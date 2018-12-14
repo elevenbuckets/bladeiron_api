@@ -6,11 +6,19 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["ethereum","ipfs","web3","dapp","jsonrpc","api","11be"],
+  "keywords": [
+    "ethereum",
+    "ipfs",
+    "web3",
+    "dapp",
+    "jsonrpc",
+    "api",
+    "11be"
+  ],
   "author": "Jason Lin",
   "license": "MIT",
   "dependencies": {
-    "jayson": "^2.1.0",
+    "rpc-websockets": "^4.3.5",
     "web3": "^0.19"
   }
 }
