@@ -56,6 +56,7 @@ class BladeAPI {
 
 				const __ready = (resolve, reject) => 
 				{
+					if (this.client.ready) return resolve(true);
 					this.client.on('open', () => { resolve(true) });
 				}
 
