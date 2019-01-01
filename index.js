@@ -209,7 +209,7 @@ class BladeAPI {
 
 		this.ipfs_pubsub_publish = (topic, buffer) =>
 		{
-			return this.client.call('ipfs_pubsub_publish_data', [topic, buffer])
+			return this.client.call('ipfs_pubsub_publish', [topic, buffer])
 				   .then((rc) => { return rc });
 		}
 
