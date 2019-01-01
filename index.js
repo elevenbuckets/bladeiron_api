@@ -221,6 +221,7 @@ class BladeAPI {
 			}
 
 			this.client.subscribe('ipfs_pubsub_incomming');
+			this.client.on('ipfs_pubsub_incomming', this.ipfs_pubsub_dispatcher);
 			return this.client.call('ipfs_pubsub_subscribe', [topic]).then((rc) => { 
 					if (!rc) return false;
 					this.ipfs_pubsub_topicList.push(topic);
