@@ -226,6 +226,7 @@ class BladeAPI {
 					this.ipfs_pubsub_topicList.push(topic);
 					return rc;
 			})
+			.catch((err) => { console.trace(err); });
 		}
 
 		this.ipfs_pubsub_unsubscribe = (topic) =>
