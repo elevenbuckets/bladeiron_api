@@ -19,6 +19,7 @@ class BladeAPI {
 		this.ready = false;
 		this.client;
 		this.userWallet = '0x';
+		this.ipfs_pubsub_topicList = [];
 
 		// Utilities
 		this.toAscii = (input) => { return w.toAscii(input) }
@@ -204,6 +205,48 @@ class BladeAPI {
 		{
 			return this.client.call('ipfs_pullIPNS', [ipnsHash])
 				   .then((rc) => { return rc });
+		}
+
+		this.ipfs_pubsub_publish = (topic, buffer) =>
+		{
+			return this.client.call('ipfs_pubsub_publish_data', [topic, buffer])
+				   .then((rc) => { return rc });
+		}
+
+		this.ipfs_pubsub_subscribe = (topic) => 
+		{
+			if (this.ipfs_pubsub_topicList.indexOf(topic) !== -1) {
+				console.log(`Already subscribed to topic ${topic}`);
+				return true;
+			}
+
+			this.client.subscribe('ipfs_pubsub_incomming');
+			return this.client.call('ipfs_pubsub_subscribe', [topic]);
+		}
+
+		this.ipfs_pubsub_unsubscribe = (topic) =>
+		{
+			if (this.ipfs_pubsub_topicList.indexOf(topic) === -1) {
+				console.log(`Not currently subscribed to topic ${topic}`);
+				return true;
+			}
+
+			return this.client.call('ipfs_pubsub_unsubscribe', [topic]).then((rc) => {
+				if (!rc) return false;
+				this.ipfs_pubsub_topicList = this.ipfs_pubsub_topicList.filter((t) => { return t !== topic });
+				if (this.ipfs_pubsub_topicList.length === 0) {
+					this.client.unsubscribe('ipfs_pubsub_incomming');
+					this.client.off('ipfs_pubsub_incomming');
+				}
+				return true;
+			});
+		}
+
+		// msgObj comes from server 'ipfs_pubsub_incomming' event 
+		this.ipfs_pubsub_dispatcher = (msgObj) => 
+		{
+			// for quick test, use unified topic handler here
+			console.dir(msgObj);
 		}
 	}
 }
