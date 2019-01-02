@@ -19,7 +19,9 @@ class BladeAPI {
 		this.ready = false;
 		this.client;
 		this.userWallet = '0x';
+
 		this.ipfs_pubsub_topicList = [];
+		this.ipfs_pubsub_handlers  = {};
 
 		// Utilities
 		this.toAscii = (input) => { return w.toAscii(input) }
@@ -213,7 +215,7 @@ class BladeAPI {
 				   .then((rc) => { return rc });
 		}
 
-		this.ipfs_pubsub_subscribe = (topic) => 
+		this.ipfs_pubsub_subscribe = (topic) => (handler) =>
 		{
 			if (this.ipfs_pubsub_topicList.indexOf(topic) !== -1) {
 				console.log(`Already subscribed to topic ${topic}`);
@@ -221,6 +223,7 @@ class BladeAPI {
 			}
 
 			this.client.subscribe('ipfs_pubsub_incomming');
+			this.ipfs_pubsub_handler[topic] = handler;
 			this.client.on('ipfs_pubsub_incomming', this.ipfs_pubsub_dispatcher);
 			return this.client.call('ipfs_pubsub_subscribe', [topic]).then((rc) => { 
 					if (!rc) return false;
@@ -228,6 +231,16 @@ class BladeAPI {
 					return rc;
 			})
 			.catch((err) => { console.trace(err); });
+		}
+
+		this.ipfs_pubsub_update_handler = (topic) => (handler) =>
+		{
+			if (this.ipfs_pubsub_topicList.indexOf(topic) === -1) {
+				console.log(`Warning: Not currently subscribed to topic ${topic}`);
+			}
+
+			this.ipfs_pubsub_handler[topic] = handler;
+			return true;	
 		}
 
 		this.ipfs_pubsub_unsubscribe = (topic) =>
@@ -252,7 +265,13 @@ class BladeAPI {
 		this.ipfs_pubsub_dispatcher = (msgObj) => 
 		{
 			// for quick test, use unified topic handler here
-			console.dir(msgObj);
+			if (typeof(this.ipfs_pubsub_handler[msgObj.topic]) === 'undefined') {
+				console.dir(JSON.stringify(msgObj, null, 4));
+				console.log(`This is simple default topic handler, please supplies your own for topic: ${msgObj.topic}`)
+			} else if (typeof(this.ipfs_pubsub_handler[msgObj.topic]) === 'function') {
+				return this.ipfs_pubsub_handler[msgObj.topic](msgObj);
+			}
+
 		}
 	}
 }
