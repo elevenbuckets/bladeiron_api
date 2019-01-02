@@ -252,6 +252,7 @@ class BladeAPI {
 
 			return this.client.call('ipfs_pubsub_unsubscribe', [topic]).then((rc) => {
 				if (!rc) return false;
+				delete(this.ipfs_pubsub_handlers[topic]);
 				this.ipfs_pubsub_topicList = this.ipfs_pubsub_topicList.filter((t) => { return t !== topic });
 				if (this.ipfs_pubsub_topicList.length === 0) {
 					this.client.unsubscribe('ipfs_pubsub_incomming');
