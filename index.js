@@ -266,7 +266,7 @@ class BladeAPI {
 		{
 			// for quick test, use unified topic handler here
 			if (typeof(this.ipfs_pubsub_handlers[msgObj.topic]) === 'undefined') {
-				console.dir(JSON.stringify(msgObj, null, 4));
+				console.dir(msgObj);
 				console.log(`This is simple default topic handler, please supplies your own for topic: ${msgObj.topic}`)
 			} else if (typeof(this.ipfs_pubsub_handlers[msgObj.topic]) === 'function') {
 				return this.ipfs_pubsub_handlers[msgObj.topic](msgObj);
