@@ -215,7 +215,7 @@ class BladeAPI {
 				   .then((rc) => { return rc });
 		}
 
-		this.ipfs_pubsub_subscribe = (topic) => (handler) =>
+		this.ipfs_pubsub_subscribe = (topic) => (handler = undefined) =>
 		{
 			if (this.ipfs_pubsub_topicList.indexOf(topic) !== -1) {
 				console.log(`Already subscribed to topic ${topic}`);
@@ -233,7 +233,7 @@ class BladeAPI {
 			.catch((err) => { console.trace(err); });
 		}
 
-		this.ipfs_pubsub_update_handler = (topic) => (handler) =>
+		this.ipfs_pubsub_update_handler = (topic) => (handler = undefined) =>
 		{
 			if (this.ipfs_pubsub_topicList.indexOf(topic) === -1) {
 				console.log(`Warning: Not currently subscribed to topic ${topic}`);
