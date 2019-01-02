@@ -223,7 +223,7 @@ class BladeAPI {
 			}
 
 			this.client.subscribe('ipfs_pubsub_incomming');
-			this.ipfs_pubsub_handler[topic] = handler;
+			this.ipfs_pubsub_handlers[topic] = handler;
 			this.client.on('ipfs_pubsub_incomming', this.ipfs_pubsub_dispatcher);
 			return this.client.call('ipfs_pubsub_subscribe', [topic]).then((rc) => { 
 					if (!rc) return false;
@@ -239,7 +239,7 @@ class BladeAPI {
 				console.log(`Warning: Not currently subscribed to topic ${topic}`);
 			}
 
-			this.ipfs_pubsub_handler[topic] = handler;
+			this.ipfs_pubsub_handlers[topic] = handler;
 			return true;	
 		}
 
@@ -265,11 +265,11 @@ class BladeAPI {
 		this.ipfs_pubsub_dispatcher = (msgObj) => 
 		{
 			// for quick test, use unified topic handler here
-			if (typeof(this.ipfs_pubsub_handler[msgObj.topic]) === 'undefined') {
+			if (typeof(this.ipfs_pubsub_handlers[msgObj.topic]) === 'undefined') {
 				console.dir(JSON.stringify(msgObj, null, 4));
 				console.log(`This is simple default topic handler, please supplies your own for topic: ${msgObj.topic}`)
-			} else if (typeof(this.ipfs_pubsub_handler[msgObj.topic]) === 'function') {
-				return this.ipfs_pubsub_handler[msgObj.topic](msgObj);
+			} else if (typeof(this.ipfs_pubsub_handlers[msgObj.topic]) === 'function') {
+				return this.ipfs_pubsub_handlers[msgObj.topic](msgObj);
 			}
 
 		}
