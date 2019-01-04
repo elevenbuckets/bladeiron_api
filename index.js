@@ -30,6 +30,7 @@ class BladeAPI {
 		this.toDecimal = (input) => { return w.toDecimal(input) }
 		this.toWei = (input, unit = 'ether') => { return w.toWei(input, unit) }
 		this.fromWei = (input, unit = 'ether') => { return w.fromWei(input, unit) }
+		this.isAddress = address => { return w.isAddress(address); }
 
 		this.toAddress = address => {
                         let addr = String(this.toHex(this.toBigNumber(address)));
