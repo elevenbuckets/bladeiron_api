@@ -143,7 +143,7 @@ class BladeAPI {
 
 		this.sendTx = (tokenSymbol) => (toAddress, amount) =>
 		{
-			return this.client.call('getTxObj', [this.userWallet, toAddress, amount])
+			return this.client.call('getTxObj', [tokenSymbol, this.userWallet, toAddress, amount])
 				   .then((rc) => { let jobObj = rc; return this.client.call('processJobs', [jobObj]); })
 		}
 
