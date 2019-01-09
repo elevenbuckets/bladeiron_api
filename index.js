@@ -57,7 +57,7 @@ class BladeAPI {
 		this.connectRPC = () => 
 		{
 			try {
-				this.client = new rpc('ws://' + this.rpchost + ':' + this.rpcport + '?socket_id=' + this.appName);
+				this.client = new rpc('ws://' + this.rpchost + ':' + this.rpcport);
 
 				const __ready = (resolve, reject) => 
 				{
