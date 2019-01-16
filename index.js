@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const rpc = require('rpc-websockets').Client;
 const web3 = require('web3');
+const abi = require('web3-eth-abi');
 const w = new web3(); // for util functions only... :P
 
 class BladeAPI {
@@ -24,6 +25,7 @@ class BladeAPI {
 		this.ipfs_pubsub_handlers  = {};
 
 		// Utilities
+		this.abi = abi;
 		this.toAscii = (input) => { return w.toAscii(input) }
 		this.toHex   = (input) => { return w.toHex(input) }
 		this.toBigNumber = (input) => { return w.toBigNumber(input) }
