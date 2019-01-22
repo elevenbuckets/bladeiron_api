@@ -74,6 +74,8 @@ class BladeAPI {
 			}
 		}
 
+		this.tokenWatcher = () => { return true }; // synctokens event handling placehoder
+
 		this.init = (condType = "Sanity") => 
 		{
 			const __getABI = (ctrName = this.appName) =>
@@ -97,6 +99,14 @@ class BladeAPI {
       				   	   if (!rc.geth || !rc.ipfs) {
 						console.log(rc);
 						throw "Server not fully functioning";
+					   }
+      				   })
+      				   .then(() => {
+					   if ( typeof(this.configs.enableGlobalTokenGroup) !== 'undefined' 
+					     && this.configs.enableGlobalTokenGroup === true
+			 		   ) {
+					        this.client.subscribe('synctokens');
+						this.client.on('synctokens', this.tokenWatcher);
 					   }
       				   })
       				   .then(() => {
