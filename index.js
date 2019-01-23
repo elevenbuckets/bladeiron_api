@@ -127,7 +127,7 @@ class BladeAPI {
 		// Ethereum (geth) related functions
                 this.call = (ctrName = this.appName) => (callName) => (...args) =>
                 {
-                        return this.client.call('call', {appName: this.appName, ctrName, callName, args})
+                        return this.client.call('call', {appName: this.appName, ctrName, callName, fromAddr: this.userWallet, args})
                 }
 
 	        this.linkAccount = (address) =>
