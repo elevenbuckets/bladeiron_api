@@ -279,6 +279,7 @@ class BladeAPI {
 		// msgObj comes from server 'ipfs_pubsub_incomming' event 
 		this.ipfs_pubsub_dispatcher = (msgObj) => 
 		{
+			if (this.ipfs_pubsub_topicList.indexOf(msgObj.topic) === -1) return;
 			// for quick test, use unified topic handler here
 			if (typeof(this.ipfs_pubsub_handlers[msgObj.topic]) === 'undefined') {
 				console.dir(msgObj);
