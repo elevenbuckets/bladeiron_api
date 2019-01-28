@@ -83,7 +83,7 @@ class BladeAPI {
 				return [this.appName, this.configs.version, ctrName, path.join(this.configs.artifactDir, ctrName + '.json')]
 			}
 
-			const __newAppHelper = (ctrName = this.appName) => (condType = "Sanity") =>
+			const __newAppHelper = (ctrName = this.appName) => (condType) =>
 			{
 				let output = __getABI(ctrName); let condition = {};
 				let _c = this.configs.contracts.filter( (c) => { return (c.ctrName === ctrName && c.conditions.indexOf(condType) !== -1) });
