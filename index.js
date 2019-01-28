@@ -298,7 +298,7 @@ class BladeAPI {
                               ethUtils.bufferToHex(
                                 ethUtils.sha3(
                                   ethUtils.bufferToHex(
-                                        ethUtils.ecrecover(sigObj.chkhash, sigObj.v, sigObj.r, sigObj.s, sigObj.netID)
+                                        ethUtils.ecrecover(sigObj.payload, sigObj.v, sigObj.r, sigObj.s, sigObj.netID)
                                   )
                                 )
                               ).slice(26);
