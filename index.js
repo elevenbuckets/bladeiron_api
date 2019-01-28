@@ -6,6 +6,8 @@ const rpc = require('rpc-websockets').Client;
 const web3 = require('web3');
 const abi = require('web3-eth-abi');
 const w = new web3(); // for util functions only... :P
+const ethUtils = require('ethereumjs-utils');
+const MerkleTree = require('merkle_tree');
 
 class BladeAPI {
 	constructor(rpcport, rpchost, options) // options is an object 
@@ -289,6 +291,52 @@ class BladeAPI {
 			}
 
 		}
+
+                this.verifySignature = (sigObj) => //sigObj = {payload, v,r,s, networkID}
+                {
+                        let signer = '0x' +
+                              ethUtils.bufferToHex(
+                                ethUtils.sha3(
+                                  ethUtils.bufferToHex(
+                                        ethUtils.ecrecover(sigObj.chkhash, sigObj.v, sigObj.r, sigObj.s, sigObj.netID)
+                                  )
+                                )
+                              ).slice(26);
+
+                        console.log(`signer address: ${signer}`);
+
+                        return signer === ethUtils.bufferToHex(sigObj.originAddress);
+                }
+
+                this.makeMerkleTree = (leaves) => {
+                        let merkleTree = new MerkleTree();
+                        merkleTree.addLeaves(leaves);
+                        merkleTree.makeTree();
+                        return merkleTree;
+                }
+
+                this.getMerkleProof = (leaves, targetLeaf) => {
+                        let merkleTree = new MerkleTree();
+                        merkleTree.addLeaves(leaves);
+                        merkleTree.makeTree();
+
+                        let __leafBuffer = Buffer.from(targetLeaf.slice(2), 'hex');
+                        let txIdx = merkleTree.tree.leaves.findIndex( (x) => { return Buffer.compare(x, __leafBuffer) == 0 } );
+                        if (txIdx == -1) {
+                                console.log('Cannot find leave in tree!');
+                                return false;
+                        } else {
+                                console.log(`Found leave in tree! Index: ${txIdx}`);
+                        }
+
+                        let proofArr = merkleTree.getProof(txIdx, true);
+                        let proof = proofArr[1].map((x) => {return ethUtils.bufferToHex(x);});
+                        let isLeft = proofArr[0];
+
+                        //targetLeaf = ethUtils.bufferToHex(merkleTree.getLeaf(txIdx));
+                        let merkleRoot = ethUtils.bufferToHex(merkleTree.getMerkleRoot());
+                        return [proof, isLeft, merkleRoot];
+                }
 	}
 }
 
