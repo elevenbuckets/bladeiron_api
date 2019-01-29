@@ -37,6 +37,19 @@ class BladeAPI {
 		this.isAddress = address => { return w.isAddress(address); }
 		this.toChecksumAddress = address => { return w.toChecksumAddress(address); }
 
+		// encode if packet is object, decode if it is RLPx
+		this.handleRLPx = (fields) => (packet) => 
+		{ 
+			let m = {};
+			try { 
+				ethUtils.defineProperties(m, fields, packet);
+				return m;
+			} catch(err) {
+				console.trace(err);
+				return {};
+			}
+		}
+
 		this.toAddress = address => {
                         let addr = String(this.toHex(this.toBigNumber(address)));
 
