@@ -101,6 +101,7 @@ class BladeAPI {
 			const __newAppHelper = (ctrName = this.appName) => (condType) =>
 			{
 				let output = __getABI(ctrName); let condition = {};
+				this.ctrAddrBook[ctrName] = require(output[3]).networks[this.networkID].address;
 				let _c = this.configs.contracts.filter( (c) => { return (c.ctrName === ctrName && c.conditions.indexOf(condType) !== -1) });
 				if (_c.length === 1) {
 					condition = { [condType]: path.join(this.configs.conditionDir, this.appName, ctrName, condType + '.js') }; 
