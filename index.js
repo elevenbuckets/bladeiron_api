@@ -22,6 +22,7 @@ class BladeAPI {
 		this.ready = false;
 		this.client;
 		this.userWallet = '0x';
+		this.ctrAddrBook = {};
 
 		this.ipfs_pubsub_topicList = [];
 		this.ipfs_pubsub_handlers  = {};
