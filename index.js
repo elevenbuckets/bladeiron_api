@@ -253,9 +253,13 @@ class BladeAPI {
 				return true;
 			}
 
-			this.client.subscribe('ipfs_pubsub_incomming');
 			this.ipfs_pubsub_handlers[topic] = handler;
-			this.client.on('ipfs_pubsub_incomming', this.ipfs_pubsub_dispatcher);
+
+			if (this.ipfs_pubsub_topicList.length === 1) {
+				this.client.subscribe('ipfs_pubsub_incomming');
+				this.client.on('ipfs_pubsub_incomming', this.ipfs_pubsub_dispatcher);
+			}
+
 			return this.client.call('ipfs_pubsub_subscribe', [topic]).then((rc) => { 
 					if (!rc) return false;
 					this.ipfs_pubsub_topicList.push(topic);
