@@ -92,6 +92,35 @@ class BladeAPI {
 
 		this.tokenWatcher = () => { return true }; // synctokens event handling placehoder
 
+		// Only used when connecting to same contract with dynamic address
+		this.connectABI = (ctrName, ctrAddr, suffix = '', condType = "Sanity") => 
+		{
+			if (suffix === '') suffix = ethUtils.bufferToHex(ethUtils.sha256(String(Math.random()) + 'Optract'));
+
+			const __getABI = (ctrName, suffix) =>
+			{
+				return [this.appName, this.configs.version, ctrName + '_' + suffix, path.join(this.configs.artifactDir, ctrName + '.json')]
+			}
+
+			const __newAppHelper = (ctrName, suffix, ctrAddr) => (condType) =>
+			{
+				let output = __getABI(ctrName, suffix); let condition = {};
+				this.ctrAddrBook[ctrName + '_' + suffix] = ctrAddr;
+				let _c = this.configs.contracts.filter( (c) => { return (c.ctrName === ctrName && c.conditions.indexOf(condType) !== -1) });
+				if (_c.length === 1) {
+					condition = { [condType]: path.join(this.configs.conditionDir, this.appName, ctrName, condType + '.js') }; 
+				}
+
+				return [...output, condition, ctrAddr];
+			}
+
+      			return this.client.call('newApp', __newAppHelper(ctrName, suffix, ctrAddr)(condType))
+				   .then(() => { 
+					 return {[ctrName + '_' + suffix]: ctrAddr}
+				   })
+				   .catch((err) => { console.trace(err); })
+		}
+
 		this.init = (condType = "Sanity") => 
 		{
 			const __getABI = (ctrName = this.appName) =>
