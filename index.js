@@ -205,17 +205,26 @@ class BladeAPI {
 				   .then((rc) => { let jobObj = rc; return this.client.call('processJobs', [jobObj]); })
 		}
 
+		this.manualGasAmount = (gasAmount) =>
+		{
+			this.gasAmount = gasAmount;
+			return true;
+		}
+
 		this.getTkObj = (ctrName) => (callName) => (...__args) => (amount = null) =>
 		{
                         let tkObj = {};
                         __args.map((i,j) => { tkObj = { ...tkObj, ['arg'+j]: i } });
                         let args = Object.keys(tkObj).sort();
 
-                        return this.client.call('getTkObj', [this.appName, ctrName, callName, args, this.userWallet, amount, tkObj]);
+			let gasAmount = (typeof(this.gasAmount) !== 'undefined') ? this.gasAmount : undefined;
+
+                        return this.client.call('getTkObj', [this.appName, ctrName, callName, args, this.userWallet, amount, tkObj, gasAmount]);
 		}
 
 		this.processJobs = (jobObjList) =>
 		{
+			this.gasAmount = undefined;
 			return this.client.call('processJobs', jobObjList);
 		}
 
