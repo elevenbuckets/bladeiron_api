@@ -205,11 +205,18 @@ class BladeAPI {
 				   .then((rc) => { let jobObj = rc; return this.client.call('processJobs', [jobObj]); })
 		}
 
-		this.manualGasAmount = (gasAmount) =>
-		{
-			this.gasAmount = gasAmount;
-			return true;
-		}
+		this.manualGasBatch = (gasAmount) => (...__fns) => {
+  			this.gasAmount = gasAmount;
+        		return Promise.all(__fns).then((plist) => {
+                                	this.gasAmount = undefined;
+                                	return plist
+                        	})
+                      		.catch((err) => {
+                                	console.trace(err);
+                                	this.gasAmount = undefined;
+                                	return [];
+                      		})
+		}		
 
 		this.getTkObj = (ctrName) => (callName) => (...__args) => (amount = null) =>
 		{
