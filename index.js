@@ -9,6 +9,9 @@ const w = new web3(); // for util functions only... :P
 const ethUtils = require('ethereumjs-utils');
 const MerkleTree = require('merkle_tree');
 
+// Functional
+const comprise = (...fns) => args => { return fns.reduce((r,f) => {return f(r)}, args); };
+
 class BladeAPI {
 	constructor(rpcport, rpchost, options) // options is an object 
 	{
@@ -205,18 +208,18 @@ class BladeAPI {
 				   .then((rc) => { let jobObj = rc; return this.client.call('processJobs', [jobObj]); })
 		}
 
-		this.manualGasBatch = (gasAmount) => (...__fns) => {
-  			this.gasAmount = gasAmount;
-        		return Promise.all(__fns).then((plist) => {
-                                	this.gasAmount = undefined;
-                                	return plist
-                        	})
-                      		.catch((err) => {
-                                	console.trace(err);
-                                	this.gasAmount = undefined;
-                                	return [];
-                      		})
-		}		
+                this.Tk = (ctrName) => (callName) => (...args) => (amount = null) => (jobList = []) =>
+                {
+                        return [ ...jobList, this.getTkObj(ctrName)(callName)(...args)(amount) ]
+                }
+
+                this.manualGasBatch = (gasAmount) => (...fns) =>
+                {
+                        this.gasAmount = gasAmount;
+                        let p = comprise(...fns)();
+                        return Promise.all(p).then((jobList) => { return this.processJobs(jobList) })
+                }
+
 
 		this.getTkObj = (ctrName) => (callName) => (...__args) => (amount = null) =>
 		{
