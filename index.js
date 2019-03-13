@@ -261,6 +261,21 @@ class BladeAPI {
 				   .then((rc) => { return rc });
 		}
 
+		this.ipfsPinList = () =>
+		{
+			return this.client.call('ipfs_lspin');
+		}
+
+		this.ipfsGetConfigs = () =>
+		{
+			return this.client.call('ipfs_getConfigs');
+		}
+
+		this.ipfsSetConfigs = (entry, value) =>
+		{
+			return this.client.call('ipfs_setConfigs', [entry, value]);
+		}
+
 		this.ipfsPut = (filepath) => 
 		{
 			return this.client.call('ipfs_put', [filepath])
@@ -286,6 +301,31 @@ class BladeAPI {
 		{
 			return this.client.call('ipfs_pullIPNS', [ipnsHash])
 				   .then((rc) => { return rc });
+		}
+
+		this.pingIPFSPeer = (nodehash) =>
+		{
+			return this.client.call('ipfs_ping', [nodehash]);
+		}
+
+		this.findIPFSPeer = (nodehash) =>
+		{
+			return this.client.call('ipfs_findPeer', [nodehash]);
+		}
+
+		this.ipfsPeerList = () =>
+		{
+			return this.client.call('ipfs_peerList');
+		}
+
+		this.ipfsSwarmConnect = (multiAddr) =>
+		{
+			return this.client.call('ipfs_swarm_connect', [multiAddr]);
+		}
+
+		this.ipfsSwarmDisconnect = (multiAddr) =>
+		{
+			return this.client.call('ipfs_swarm_disconnect', [multiAddr]);
 		}
 
 		this.ipfs_pubsub_publish = (topic, buffer) =>
