@@ -78,7 +78,7 @@ class BladeAPI {
 		this.connectRPC = () => 
 		{
 			try {
-				this.client = new rpc('ws://' + this.rpchost + ':' + this.rpcport);
+				this.client = new rpc('wss://' + this.rpchost + ':' + this.rpcport, { rejectUnauthorized: false, ecdhCurve: 'auto' });
 
 				const __ready = (resolve, reject) => 
 				{
