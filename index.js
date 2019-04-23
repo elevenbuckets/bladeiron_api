@@ -27,8 +27,8 @@ class BladeAPI {
 		this.userWallet = '0x';
 		this.ctrAddrBook = {};
 
-		this.ipfs_pubsub_topicList = [];
-		this.ipfs_pubsub_handlers  = {};
+		this.pubsub_topicList = [];
+		this.pubsub_handlers  = {};
 
 		// Utilities
 		this.abi = abi;
@@ -78,6 +78,7 @@ class BladeAPI {
 		this.connectRPC = () => 
 		{
 			try {
+				//this.client = new rpc('wss://' + this.rpchost + ':' + this.rpcport, { rejectUnauthorized: false, ecdhCurve: 'auto' });
 				this.client = new rpc('ws://' + this.rpchost + ':' + this.rpcport);
 
 				const __ready = (resolve, reject) => 
@@ -328,28 +329,28 @@ class BladeAPI {
 			return this.client.call('ipfs_swarm_disconnect', [multiAddr]);
 		}
 
-		this.ipfs_pubsub_publish = (topic, buffer) =>
+		this.pubsub_publish = (topic, buffer) =>
 		{
-			return this.client.call('ipfs_pubsub_publish', [topic, buffer])
+			return this.client.call('pubsub_publish', [topic, buffer])
 				   .then((rc) => { return rc });
 		}
 
-		this.ipfs_pubsub_subscribe = (topic) => (handler = undefined) =>
+		this.pubsub_subscribe = (topic) => (handler = undefined) =>
 		{
-			if (this.ipfs_pubsub_topicList.indexOf(topic) !== -1) {
+			if (this.pubsub_topicList.indexOf(topic) !== -1) {
 				console.log(`Already subscribed to topic ${topic}`);
 				return true;
 			}
 
-			this.ipfs_pubsub_handlers[topic] = handler;
+			this.pubsub_handlers[topic] = handler;
 
-			return this.client.call('ipfs_pubsub_subscribe', [topic]).then((rc) => { 
+			return this.client.call('pubsub_subscribe', [topic]).then((rc) => { 
 					if (!rc) return false;
-					this.ipfs_pubsub_topicList.push(topic);
+					this.pubsub_topicList.push(topic);
 
-					if (this.ipfs_pubsub_topicList.length === 1) {
-						this.client.subscribe('ipfs_pubsub_incomming');
-						this.client.on('ipfs_pubsub_incomming', this.ipfs_pubsub_dispatcher);
+					if (this.pubsub_topicList.length === 1) {
+						this.client.subscribe('pubsub_incomming');
+						this.client.on('pubsub_incomming', this.pubsub_dispatcher);
 					}
 
 					return rc;
@@ -357,45 +358,46 @@ class BladeAPI {
 			.catch((err) => { console.trace(err); });
 		}
 
-		this.ipfs_pubsub_update_handler = (topic) => (handler = undefined) =>
+		this.pubsub_update_handler = (topic) => (handler = undefined) =>
 		{
-			if (this.ipfs_pubsub_topicList.indexOf(topic) === -1) {
+			if (this.pubsub_topicList.indexOf(topic) === -1) {
 				console.log(`Warning: Not currently subscribed to topic ${topic}`);
 			}
 
-			this.ipfs_pubsub_handlers[topic] = handler;
+			this.pubsub_handlers[topic] = handler;
 			return true;	
 		}
 
-		this.ipfs_pubsub_unsubscribe = (topic) =>
+		this.pubsub_unsubscribe = (topic) =>
 		{
-			if (this.ipfs_pubsub_topicList.indexOf(topic) === -1) {
+			if (this.pubsub_topicList.indexOf(topic) === -1) {
 				console.log(`Not currently subscribed to topic ${topic}`);
 				return true;
 			}
 
-			return this.client.call('ipfs_pubsub_unsubscribe', [topic]).then((rc) => {
+			return this.client.call('pubsub_unsubscribe', [topic]).then((rc) => {
 				if (!rc) return false;
-				delete(this.ipfs_pubsub_handlers[topic]);
-				this.ipfs_pubsub_topicList = this.ipfs_pubsub_topicList.filter((t) => { return t !== topic });
-				if (this.ipfs_pubsub_topicList.length === 0) {
-					this.client.unsubscribe('ipfs_pubsub_incomming');
-					this.client.off('ipfs_pubsub_incomming');
+				delete(this.pubsub_handlers[topic]);
+				this.pubsub_topicList = this.pubsub_topicList.filter((t) => { return t !== topic });
+				if (this.pubsub_topicList.length === 0) {
+					this.client.unsubscribe('pubsub_incomming');
+					this.client.off('pubsub_incomming');
 				}
 				return true;
 			});
 		}
 
 		// msgObj comes from server 'ipfs_pubsub_incomming' event 
-		this.ipfs_pubsub_dispatcher = (msgObj) => 
+		this.pubsub_dispatcher = (msgObj) => 
 		{
-			if (this.ipfs_pubsub_topicList.indexOf(msgObj.topic) === -1) return;
+			console.log("dispatcher called..");
+			if (this.pubsub_topicList.indexOf(msgObj.topic) === -1) return;
 			// for quick test, use unified topic handler here
-			if (typeof(this.ipfs_pubsub_handlers[msgObj.topic]) === 'undefined') {
+			if (typeof(this.pubsub_handlers[msgObj.topic]) === 'undefined') {
 				console.dir(msgObj);
 				console.log(`This is simple default topic handler, please supplies your own for topic: ${msgObj.topic}`)
-			} else if (typeof(this.ipfs_pubsub_handlers[msgObj.topic]) === 'function') {
-				return this.ipfs_pubsub_handlers[msgObj.topic](msgObj);
+			} else if (typeof(this.pubsub_handlers[msgObj.topic]) === 'function') {
+				return this.pubsub_handlers[msgObj.topic](msgObj);
 			}
 
 		}
